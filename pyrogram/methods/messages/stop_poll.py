@@ -56,7 +56,7 @@ class StopPoll:
 
                 await app.stop_poll(chat_id, message_id)
         """
-        poll = (await self.get_messages(chat_id=chat_id, message_ids=message_id)).poll
+        poll = (await self.get_messages(chat_id, message_id)).poll
 
         r = await self.invoke(
             raw.functions.messages.EditMessage(
@@ -65,17 +65,13 @@ class StopPoll:
                 media=raw.types.InputMediaPoll(
                     poll=raw.types.Poll(
                         id=int(poll.id),
-                        question=raw.types.TextWithEntities(text="", entities=[]),
-                        answers=[]
-                        hash=0,
                         closed=True,
-                    ),
+                        question="",
+                        answers=[]
+                    )
                 ),
                 reply_markup=await reply_markup.write(self) if reply_markup else None
             )
         )
 
-        users = {i.id: i for i in r.users}
-        chats = {i.id: i for i in r.chats}
-
-        return types.Poll._parse(self, r.updates[0], None, users=users, chats=chats)
+        return types.Poll._parse(self, r.updates[0])
